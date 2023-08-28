@@ -1,0 +1,44 @@
+{% extends "base.html" %} {% block title %}Register Page{% endblock %} {% block
+content %}
+<div class="card">
+<!-- <div class="card" style="background-color: #777681a8"> -->
+  <div class="container p-3 rounded-2">
+    <form action="/registeruser" method="post" class="">
+      <h4 class="d-flex justify-content-center">Creat An Account!</h4>
+      <div class="mb-3">
+      <label for="email" class="form-label">Email address</label>
+      <input
+        class="form-control"
+        type="text"
+        name="email"
+        placeholder="Email address"
+        required
+      />
+      </div>
+      <div class="mb-3">
+      <label for="username" class="form-label">Username</label>
+      <input
+        class="form-control"
+        type="text"
+        name="username"
+        placeholder="Username"
+        required
+      />
+      </div>
+      <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input
+        class="form-control"
+        type="password"
+        name="password"
+        placeholder="Password"
+        required
+      />
+           </div>
+      <button class="btn btn-success col-auto" type="submit">Register</button>
+    </form>
+     <p><b>I already have an account? <a href="/login">Login</a></b></p>
+  </form>
+  </div>
+</div>
+{% endblock %}

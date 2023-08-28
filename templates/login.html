@@ -1,0 +1,35 @@
+{% extends "base.html" %} {% block title %}Login Page{% endblock %} {% block
+content %}
+<!-- <div class="card" style="background-color: #777681a8"> -->
+<div class="card">
+  <div class="container p-3 rounded-2">
+    <form action="/loginuser" method="post" class="">
+      <h4 class="d-flex justify-content-center">Welcome! login to continue</h4>
+      <div class="mb-3">
+        <label for="username" class="form-label">Email address</label>
+        <input
+          class="form-control"
+          type="text"
+          name="username"
+          placeholder="Username"
+          required
+        />
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input
+          class="form-control"
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+      </div>
+      <button type="submit" class="btn btn-primary col-auto">Login</button>
+      <p>
+        <b>Don't have an account? <a href="/register">Register</a></b>
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}

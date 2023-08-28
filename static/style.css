@@ -1,0 +1,21 @@
+body {
+  width: 100vw;
+  height: 100vh;
+  background-image: url("./resources/Blog-Cybersecurity-trends-1024x597.jpg");
+  /* background-image: url("./resources/Cybersecurity.png"); */
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 80%;
+}
+
+.card{
+  width: 500px;
+  min-width: 300px;
+}
