@@ -6,7 +6,7 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import bcrypt
-from models import User
+from models import User, Report
 from security import verify_password, COOKIE_NAME, oauth2_scheme, JWT_SECRET, ALGORITHM
 
 
@@ -60,6 +60,7 @@ async def get_current_user(db, token: Annotated[str, Depends(oauth2_scheme)]):
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
+    
     user = UserRepository(db).get_user_by_username(
         username=token_data.username)
     if user is None:
@@ -69,7 +70,21 @@ async def get_current_user(db, token: Annotated[str, Depends(oauth2_scheme)]):
 def authenticate_user(db, username: str, password: str) -> User | bool:
     user = db.query(User).filter(User.username == username).first()
     if not user:
+        print("Error getting user")
         return False
     if not verify_password(password, user.password):
+        print("Error verifying password")
         return False
     return user
+
+class ReportRepo:
+    def __init__(self, sess: Session):
+        self.sess: Session = sess
+
+    def update_report(self, data: Report):
+        try:
+            self.sess.add(data)
+            self.sess.commit()
+        except:
+            return False
+        return True

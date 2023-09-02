@@ -109,8 +109,8 @@ content %}
     progressBar.classList.remove("bg-danger", "bg-success"); // Reset progress bar color
 
     progressBar.style.width = "10%"; // Set initial progress bar value
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate some initial delay
-
+    // await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate some initial delay
+    
     progressBar.style.width = "50%"; // Update progress bar value
     const response = await detectUrl(inputValue.value);
     progressBar.style.width = "100%"; // Complete progress bar
@@ -128,7 +128,7 @@ content %}
 
   modalCloseBtn.onclick = function () {
     displayProgress(false);
-    inputValue.value =""
+    // inputValue.value =""
   };
 </script>
 {% endblock %}

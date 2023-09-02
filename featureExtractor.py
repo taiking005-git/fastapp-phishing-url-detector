@@ -1,11 +1,12 @@
 from datetime import datetime
-from urllib.parse import urlencode, urlparse, quote
+from urllib.parse import urlparse, quote
 import ipaddress
-import re , requests
+import re
+import requests
 from bs4 import BeautifulSoup
-from fastapi import Request
+# from fastapi import Request
 import whois
-
+import numpy as np
 
 # listing shortening services
 shortening_services = r"bit\.ly|goo\.gl|shorte\.st|go2l\.ink|x\.co|ow\.ly|t\.co|tinyurl|tr\.im|is\.gd|cli\.gs|" \
@@ -64,6 +65,8 @@ def getDepth(url):
     return depth
 
 # 6.Checking for redirection '//' in the url (Redirection)
+
+
 def redirection(url):
     pos = url.rfind('//')
     if pos > 6:
@@ -75,6 +78,8 @@ def redirection(url):
         return 0
 
 # 7.Existence of “HTTPS” Token in the Domain Part of the URL (https_Domain)
+
+
 def httpDomain(url):
     domain = urlparse(url).netloc
     if 'https' in domain:
@@ -83,6 +88,8 @@ def httpDomain(url):
         return 0
 
 # 8. Checking for Shortening Services in URL (Tiny_URL)
+
+
 def tinyURL(url):
     match = re.search(shortening_services, url)
     if match:
@@ -91,12 +98,13 @@ def tinyURL(url):
         return 0
 
 # 9.Checking for Prefix or Suffix Separated by (-) in the Domain (Prefix/Suffix)
+
+
 def prefixSuffix(url):
     if '-' in urlparse(url).netloc:
         return 1
     else:
         return 0
-
 
 
 # 12.Web traffic (Web_Traffic)
@@ -138,6 +146,8 @@ def domainAge(domain_name):
     return age
 
 # 14.End time of domain: The difference between termination time and current time (Domain_End)
+
+
 def domainEnd(domain_name):
     expiration_date = domain_name.expiration_date
     if isinstance(expiration_date, str):
@@ -159,6 +169,8 @@ def domainEnd(domain_name):
     return end
 
 # 15. IFrame Redirection (iFrame)
+
+
 def iframe(response):
     if response == "":
         return 1
@@ -167,79 +179,86 @@ def iframe(response):
             return 0
         else:
             return 1
-        
-# 16.Checks the effect of mouse over on status bar (Mouse_Over)
-def mouseOver(response): 
-  if response == "" :
-    return 1
-  else:
-    if re.findall("<script>.+onmouseover.+</script>", response.text):
-      return 1
-    else:
-      return 0
-    
-# 17.Checks the status of the right click attribute (Right_Click)
-def rightClick(response):
-  if response == "":
-    return 1
-  else:
-    if re.findall(r"event.button ?== ?2", response.text):
-      return 0
-    else:
-      return 1
 
-# 18.Checks the number of forwardings (Web_Forwards)    
-def forwarding(response):
-  if response == "":
-    return 1
-  else:
-    if len(response.history) <= 2:
-      return 0
+# 16.Checks the effect of mouse over on status bar (Mouse_Over)
+
+
+def mouseOver(response):
+    if response == "":
+        return 1
     else:
-      return 1
-    
-#Function to extract features
+        if re.findall("<script>.+onmouseover.+</script>", response.text):
+            return 1
+        else:
+            return 0
+
+# 17.Checks the status of the right click attribute (Right_Click)
+
+
+def rightClick(response):
+    if response == "":
+        return 1
+    else:
+        if re.findall(r"event.button ?== ?2", response.text):
+            return 0
+        else:
+            return 1
+
+# 18.Checks the number of forwardings (Web_Forwards)
+
+
+def forwarding(response):
+    if response == "":
+        return 1
+    else:
+        if len(response.history) <= 2:
+            return 0
+        else:
+            return 1
+
+# Function to extract features
+
+
 def featureExtraction(url):
 
-  features = []
-  #Address bar based features (10)
+    features = []
+    # Address bar based features (10)
 #   features.append(getDomain(url))
-  features.append(havingIP(url))
-  features.append(haveAtSign(url))
-  features.append(getLength(url))
-  features.append(getDepth(url))
-  features.append(redirection(url))
-  features.append(httpDomain(url))
-  features.append(tinyURL(url))
-  features.append(prefixSuffix(url))
-  
-  #Domain based features (4)
-  dns = 0
-  try:
-    domain_name = whois.whois(urlparse(url).netloc)
-  except:
-    dns = 1
+    features.append(havingIP(url))
+    features.append(haveAtSign(url))
+    features.append(getLength(url))
+    features.append(getDepth(url))
+    features.append(redirection(url))
+    features.append(httpDomain(url))
+    features.append(tinyURL(url))
+    features.append(prefixSuffix(url))
 
-  features.append(dns)
-  features.append(web_traffic(url))
-  features.append(1 if dns == 1 else domainAge(domain_name))
-  features.append(1 if dns == 1 else domainEnd(domain_name))
-  
-  # HTML & Javascript based features
-  try:
-    response = Request.get(url)
-  except:
-    response = ""
+    # Domain based features (4)
+    dns = 0
+    try:
+        domain_name = whois.whois(urlparse(url).netloc)
+    except:
+        dns = 1
 
-  features.append(iframe(response))
-  features.append(mouseOver(response))
-  features.append(rightClick(response))
-  features.append(forwarding(response))
-  
-  return features
+    features.append(dns)
+    features.append(web_traffic(url))
+    features.append(1 if dns == 1 else domainAge(domain_name))
+    features.append(1 if dns == 1 else domainEnd(domain_name))
 
-#converting the list to dataframe
-feature_names = ['Domain', 'Have_IP', 'Have_At', 'URL_Length', 'URL_Depth','Redirection', 
-                      'https_Domain', 'TinyURL', 'Prefix/Suffix', 'DNS_Record', 'Web_Traffic', 
-                      'Domain_Age', 'Domain_End', 'iFrame', 'Mouse_Over','Right_Click', 'Web_Forwards', 'Label']
+    # HTML & Javascript based features
+    try:
+        response = requests.get(url)
+    except:
+        response = ""
 
+    features.append(iframe(response))
+    features.append(mouseOver(response))
+    features.append(rightClick(response))
+    features.append(forwarding(response))
+
+    # converting the list to dataframe
+    feature_names = ['Domain', 'Have_IP', 'Have_At', 'URL_Length', 'URL_Depth', 'Redirection',
+                     'https_Domain', 'TinyURL', 'Prefix/Suffix', 'DNS_Record', 'Web_Traffic',
+                     'Domain_Age', 'Domain_End', 'iFrame', 'Mouse_Over', 'Right_Click', 'Web_Forwards', 'Label']
+    # feature_array = pd.DataFrame(feature_names, columns=feature_names)
+    return np.array(features)
