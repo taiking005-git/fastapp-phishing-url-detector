@@ -1,0 +1,2 @@
+run the program
+uvicorn app:app --reload     

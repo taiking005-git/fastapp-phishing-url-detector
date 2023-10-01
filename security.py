@@ -1,9 +1,7 @@
-from typing import Annotated, Union
-from fastapi import Depends, HTTPException, status
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from models import User
-from jose import JWTError, jwt
+from jose import jwt
 from fastapi.security import OAuth2PasswordBearer
 
 
@@ -41,6 +39,7 @@ def create_access_token(user:User):
 #password security
 def verify_password(plain_password, hashed_password) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
+    # return True
 
    
 def hash_password(password) -> str:

@@ -1,7 +1,4 @@
 from datetime import timedelta
-from lib2to3.fixes.fix_input import context
-
-
 from fastapi import FastAPI, Depends, HTTPException, Request, Form, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
@@ -9,15 +6,15 @@ from fastapi.staticfiles import StaticFiles
 
 from starlette.responses import RedirectResponse
 from starlette.templating import Jinja2Templates
+from aipredictor import predict_url
 from security import ACCESS_TOKEN_EXPIRE_MINUTES, COOKIE_NAME,  hash_password, oauth2_scheme
-from featureExtractor import featureExtraction as get_feature
 
 from sqlalchemy.orm import Session
 
 # import database and the model
 import models
 from database import get_db, engine
-from util import UserRepository, authenticate_user, get_current_user
+from util import ReportRepo, UserRepository, authenticate_user, get_current_user
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -28,7 +25,7 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory='static', html=True), name='static')
 
 
-def get_cookies(request):
+def get_cookies(request: Request):
     return request.cookies.get(COOKIE_NAME)
 
 
@@ -82,7 +79,7 @@ async def register_user(request: Request, email: str = Form(), username: str = F
 
 @app.post("/loginuser")
 async def user_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    error = "welcome"
+    
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -95,7 +92,7 @@ async def user_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Sessi
     access_token = UserRepository.create_access_token(
         data={"sub": form_data.username}, expires_delta=access_token_expires
     )
-   
+
     url = app.url_path_for("home")
     resp = RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
     resp.set_cookie(
@@ -118,6 +115,9 @@ def logout(resp: Response, request: Request):
 
 
 @app.get("/detect/")
-def detect_url(url: str, db: Session = Depends(get_db)):
-    features = get_feature(url)
-    return  features
+async def detect_url(url: str, db: Session = Depends(get_db)):
+    result = await predict_url(url)
+    if result:
+        signup_data = models.Report(site_url=url, isPhishing=result)
+        update_report = ReportRepo(db).update_report(signup_data)
+    return result
