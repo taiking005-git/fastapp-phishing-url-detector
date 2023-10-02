@@ -60,11 +60,12 @@ def register(request: Request, db: Session = Depends(get_db)):
 @app.post("/registeruser")
 async def register_user(request: Request, email: str = Form(), username: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
     userSession = UserRepository(db)
-    is_username_exist = userSession.get_user_by_username(username)
-    is_email_exist = userSession.get_user_by_email(email)
+    is_user_exists = userSession.get_user_by_username(
+        username) or userSession.get_user_by_email(email)
 
-    if is_username_exist or is_email_exist:
-        return {"message": "username or email already exist"}
+    if is_user_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Username or email already exists")
 
     signup_data = models.User(
         email=email, username=username, password=hash_password(password))
@@ -72,14 +73,14 @@ async def register_user(request: Request, email: str = Form(), username: str = F
     if success:
         url = app.url_path_for("login")
         return RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
-    else:
-        url = app.url_path_for("register")
-        return RedirectResponse(url=url, status_code=status.HTTP_404_NOT_FOUND)
+
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error creating user")
 
 
 @app.post("/loginuser")
 async def user_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    
+
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(

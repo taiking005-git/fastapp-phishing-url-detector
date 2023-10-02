@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import bcrypt
 from models import User, Report
-from security import verify_password, COOKIE_NAME, oauth2_scheme, JWT_SECRET, ALGORITHM
+from security import hash_password, verify_password, COOKIE_NAME, oauth2_scheme, JWT_SECRET, ALGORITHM
 
 
 class TokenData(BaseModel):
@@ -26,11 +26,10 @@ class UserRepository:
 
     def create_user(self, signup: User) -> bool:
         try:
-            signup.password = bcrypt.hashpw(
-                signup.password.encode(), bcrypt.gensalt())
             self.sess.add(signup)
             self.sess.commit()
         except:
+            print("Error")
             return False
         return True
 
@@ -69,9 +68,9 @@ async def get_current_user(db, token: Annotated[str, Depends(oauth2_scheme)]):
 
 def authenticate_user(db, username: str, password: str) -> User | bool:
     user = db.query(User).filter(User.username == username).first()
+    print(user.password)
     if not user:
-        print("Error getting user")
-        return False
+        return {"error":"Error getting users"}
     if not verify_password(password, user.password):
         print("Error verifying password")
         return False

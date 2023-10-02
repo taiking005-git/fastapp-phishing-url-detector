@@ -1,6 +1,6 @@
 import pickle
-import numpy as np
-from sklearn.neural_network import MLPClassifier
+# import numpy as np
+# from sklearn.neural_network import MLPClassifier
 
 from featureExtractor import featureExtraction
 

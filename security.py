@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from models import User
 from jose import jwt
 from fastapi.security import OAuth2PasswordBearer
-
+import bcrypt
 
 
 
@@ -38,11 +38,12 @@ def create_access_token(user:User):
 
 #password security
 def verify_password(plain_password, hashed_password) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
-    # return True
+    return bcrypt.checkpw(plain_password.encode(), hashed_password)
+
 
    
 def hash_password(password) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+    
     
 
