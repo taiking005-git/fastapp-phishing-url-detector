@@ -1,10 +1,10 @@
-#Phishing url detector using machine learning
+# Phishing url detector using machine learning
 
-##About the Project
+## About the Project
 Machine learning-based phishing url detection
 This project is a python-based phishing url detection system that uses fastapi. It consists of a simple localhost website that enables users to login and input a dubious website and check if it is authentic or phishing.
 
-##Built With
+## Built With
 - Python
 - FastApi
 - JavaScript
