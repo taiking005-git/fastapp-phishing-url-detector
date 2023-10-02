@@ -68,11 +68,9 @@ async def get_current_user(db, token: Annotated[str, Depends(oauth2_scheme)]):
 
 def authenticate_user(db, username: str, password: str) -> User | bool:
     user = db.query(User).filter(User.username == username).first()
-    print(user.password)
     if not user:
-        return {"error":"Error getting users"}
+        return False
     if not verify_password(password, user.password):
-        print("Error verifying password")
         return False
     return user
 
