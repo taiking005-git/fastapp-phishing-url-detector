@@ -116,9 +116,14 @@ def logout(resp: Response, request: Request):
 
 
 @app.get("/detect/")
-async def detect_url(url: str, db: Session = Depends(get_db)):
+async def detect_url(request: Request, url: str, db: Session = Depends(get_db)):
+    cookie_token = get_cookies(request)
+    current_user = await get_current_user(db, cookie_token)
     result = await predict_url(url)
+    
     if result:
-        signup_data = models.Report(site_url=url, isPhishing=result)
-        update_report = ReportRepo(db).update_report(signup_data)
+        users_data = models.Report(site_url=url, isPhishing=result)
+        users_data.id = current_user.id
+        # Store users reports
+        ReportRepo(db).update_report(users_data)
     return result

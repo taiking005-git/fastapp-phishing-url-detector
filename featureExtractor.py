@@ -4,7 +4,6 @@ import ipaddress
 import re
 import requests
 from bs4 import BeautifulSoup
-# from fastapi import Request
 import whois
 import numpy as np
 
@@ -18,6 +17,15 @@ shortening_services = r"bit\.ly|goo\.gl|shorte\.st|go2l\.ink|x\.co|ow\.ly|t\.co|
                       r"prettylinkpro\.com|scrnch\.me|filoops\.info|vzturl\.com|qr\.net|1url\.com|tweez\.me|v\.gd|" \
                       r"tr\.im|link\.zip\.net"
 
+# check for internet connectivity
+def checkIsOnline():
+    try:
+        response = requests.get('https://www.google.com')
+        if response.status_code == 200:
+            return True
+    except requests.exceptions.ConnectionError:
+        print('You are offline.')
+    return False
 
 # 1.Domain of the URL (Domain)
 def getDomain(url):
@@ -108,20 +116,39 @@ def prefixSuffix(url):
 
 
 # 12.Web traffic (Web_Traffic)
+# def web_traffic(url):
+#     try:
+#         # Filling the whitespaces in the URL if any
+#         url = quote(url, safe="")
+#         rank = BeautifulSoup(requests.get("http://data.alexa.com/data?cli=10&dat=s&url=" + url).read(), "xml").find(
+#             "REACH")['RANK']
+#         rank = int(rank)
+#     except (TypeError, KeyError, requests.RequestException):
+#         return 1
+#     print(rank)
+#     if rank < 100000:
+#         return 1
+#     else:
+#         return 0
 def web_traffic(url):
     try:
         # Filling the whitespaces in the URL if any
-        url = quote(url, safe="")
-        rank = BeautifulSoup(requests.get("http://data.alexa.com/data?cli=10&dat=s&url=" + url).read(), "xml").find(
-            "REACH")['RANK']
-        rank = int(rank)
-    except (TypeError, KeyError, requests.RequestException):
-        return 1
-    if rank < 100000:
-        return 1
-    else:
-        return 0
+        domain = getDomain(url)
+        response = requests.get(
+            f"https://www.semrush.com/website/{domain}/overview/")
+        response.raise_for_status()  # Raise an HTTPError for bad responses
 
+        soup = BeautifulSoup(response.text, "html.parser").find_all(
+            "b", class_="rank-card__SCRank-sc-2sba91-8")[0].text
+        rank = int(soup.replace(',', ''))
+
+        # Using a ternary operator for better readability
+        return 1 if rank < 100000 else 0
+    except (TypeError, KeyError, requests.RequestException) as e:
+        print(f"Error: {e}")
+        return 1
+    
+    
 
 # 13.Survival time of domain: The difference between termination time and creation time (Domain_Age)
 def domainAge(domain_name):
@@ -169,8 +196,6 @@ def domainEnd(domain_name):
     return end
 
 # 15. IFrame Redirection (iFrame)
-
-
 def iframe(response):
     if response == "":
         return 1
@@ -222,8 +247,6 @@ def forwarding(response):
 def featureExtraction(url):
 
     features = []
-    # Address bar based features (10)
-#   features.append(getDomain(url))
     features.append(havingIP(url))
     features.append(haveAtSign(url))
     features.append(getLength(url))
@@ -233,7 +256,8 @@ def featureExtraction(url):
     features.append(tinyURL(url))
     features.append(prefixSuffix(url))
 
-    # Domain based features (4)
+
+
     dns = 0
     try:
         domain_name = whois.whois(urlparse(url).netloc)
@@ -260,5 +284,4 @@ def featureExtraction(url):
     feature_names = ['Domain', 'Have_IP', 'Have_At', 'URL_Length', 'URL_Depth', 'Redirection',
                      'https_Domain', 'TinyURL', 'Prefix/Suffix', 'DNS_Record', 'Web_Traffic',
                      'Domain_Age', 'Domain_End', 'iFrame', 'Mouse_Over', 'Right_Click', 'Web_Forwards', 'Label']
-    # feature_array = pd.DataFrame(feature_names, columns=feature_names)
     return np.array(features)
