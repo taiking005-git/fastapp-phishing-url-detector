@@ -122,8 +122,7 @@ async def detect_url(request: Request, url: str, db: Session = Depends(get_db)):
     result = await predict_url(url)
     
     if result:
-        users_data = models.Report(site_url=url, isPhishing=result)
-        users_data.id = current_user.id
+        users_data = models.Report(site_url=url, user_id=current_user.id, isPhishing=result )
         # Store users reports
         ReportRepo(db).update_report(users_data)
     return result

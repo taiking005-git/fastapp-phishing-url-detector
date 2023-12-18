@@ -16,4 +16,4 @@ async def predict_url(url):
         else:
             return "legitimate"
     else:
-        return "Error Connecting to the internet!"
+        return "An error occur while connecting to the Internet!"

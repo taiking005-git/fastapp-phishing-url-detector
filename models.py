@@ -15,17 +15,17 @@ class User(Base):
     role = Column(Enum(Roles), default="user")
     isActive = Column(Boolean, default=False)
 
-    reports = relationship("Report", back_populates="user")
+    # reports = relationship("Report", back_populates="user")
 
 
 class Report(Base):
     __tablename__ = "reports"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer)
     site_url = Column(String, nullable=False, unique=True)
     isPhishing = Column(String)
 
 
-    user = relationship("User", back_populates="reports")
+    # user = relationship("User", back_populates="reports")
 
 

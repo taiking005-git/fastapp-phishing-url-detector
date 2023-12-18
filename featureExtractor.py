@@ -20,12 +20,11 @@ shortening_services = r"bit\.ly|goo\.gl|shorte\.st|go2l\.ink|x\.co|ow\.ly|t\.co|
 # check for internet connectivity
 def checkIsOnline():
     try:
-        response = requests.get('https://www.google.com')
+        response = requests.get('https://www.google.com', timeout=2)
         if response.status_code == 200:
             return True
     except requests.exceptions.ConnectionError:
-        print('You are offline.')
-    return False
+        return False
 
 # 1.Domain of the URL (Domain)
 def getDomain(url):
@@ -115,25 +114,11 @@ def prefixSuffix(url):
         return 0
 
 
-# 12.Web traffic (Web_Traffic)
-# def web_traffic(url):
-#     try:
-#         # Filling the whitespaces in the URL if any
-#         url = quote(url, safe="")
-#         rank = BeautifulSoup(requests.get("http://data.alexa.com/data?cli=10&dat=s&url=" + url).read(), "xml").find(
-#             "REACH")['RANK']
-#         rank = int(rank)
-#     except (TypeError, KeyError, requests.RequestException):
-#         return 1
-#     print(rank)
-#     if rank < 100000:
-#         return 1
-#     else:
-#         return 0
 def web_traffic(url):
     try:
         # Filling the whitespaces in the URL if any
         domain = getDomain(url)
+        print(domain)
         response = requests.get(
             f"https://www.semrush.com/website/{domain}/overview/")
         response.raise_for_status()  # Raise an HTTPError for bad responses
@@ -141,7 +126,6 @@ def web_traffic(url):
         soup = BeautifulSoup(response.text, "html.parser").find_all(
             "b", class_="rank-card__SCRank-sc-2sba91-8")[0].text
         rank = int(soup.replace(',', ''))
-
         # Using a ternary operator for better readability
         return 1 if rank < 100000 else 0
     except (TypeError, KeyError, requests.RequestException) as e:
