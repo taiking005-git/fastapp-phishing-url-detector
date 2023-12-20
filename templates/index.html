@@ -36,6 +36,7 @@ content %}
   </div>
   <div class="container p-3 rounded-2" style="background-color: #777681a8">
     <h3>Enter a link to get started</h3>
+    <!-- <form onsubmit="onSubmit()" > -->
     <div class="row g-3 pt-4">
       <input
         class="form-control"
@@ -46,6 +47,7 @@ content %}
         placeholder="Enter website link"
       />
       <button type="submit" class="btn btn-primary" id="detect">Detect</button>
+      <!-- </form> -->
       <div id="progress">
         <div
           class="progress"
@@ -101,18 +103,32 @@ content %}
     return data;
   }
 
+  function isValidUrl(url) {
+    const urlRegex =
+      /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
+
+    return urlRegex.test(url);
+  }
+
   displayProgress(false);
 
   detectBtn.onclick = async function () {
+    const input = inputValue.value;
+    if (!input || !isValidUrl(input)) {
+      myModal.show(modal);
+      modalBody.textContent = "Please enter a valid URL.";
+      return;
+    }
+
     displayProgress(true);
     progressBar.style.width = "0%"; // Reset the progress bar
     progressBar.classList.remove("bg-danger", "bg-success"); // Reset progress bar color
 
     progressBar.style.width = "10%"; // Set initial progress bar value
     // await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate some initial delay
-    
     progressBar.style.width = "50%"; // Update progress bar value
-    const response = await detectUrl(inputValue.value);
+
+    const response = await detectUrl(input);
     progressBar.style.width = "100%"; // Complete progress bar
 
     if (response) {

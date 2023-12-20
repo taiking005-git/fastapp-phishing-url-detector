@@ -18,6 +18,8 @@ shortening_services = r"bit\.ly|goo\.gl|shorte\.st|go2l\.ink|x\.co|ow\.ly|t\.co|
                       r"tr\.im|link\.zip\.net"
 
 # check for internet connectivity
+
+
 def checkIsOnline():
     try:
         response = requests.get('https://www.google.com', timeout=2)
@@ -26,15 +28,19 @@ def checkIsOnline():
     except requests.exceptions.ConnectionError:
         return False
 
+
 # 1.Domain of the URL (Domain)
 def getDomain(url):
     domain = urlparse(url).netloc
     if re.match(r"^www.", domain):
         domain = domain.replace("www.", "")
         return domain
-
+    else:
+        return domain
 
 # 2.Checks for IP address in URL (Have_IP)
+
+
 def havingIP(url):
     try:
         ipaddress.ip_address(url)
@@ -115,24 +121,24 @@ def prefixSuffix(url):
 
 
 def web_traffic(url):
+    domain = getDomain(url)
+
     try:
         # Filling the whitespaces in the URL if any
-        domain = getDomain(url)
-        print(domain)
-        response = requests.get(
-            f"https://www.semrush.com/website/{domain}/overview/")
+        base_url = "https://www.semrush.com/website/"
+        response = requests.get(f"{base_url}{domain}/overview/")
         response.raise_for_status()  # Raise an HTTPError for bad responses
 
         soup = BeautifulSoup(response.text, "html.parser").find_all(
             "b", class_="rank-card__SCRank-sc-2sba91-8")[0].text
+        
         rank = int(soup.replace(',', ''))
         # Using a ternary operator for better readability
         return 1 if rank < 100000 else 0
     except (TypeError, KeyError, requests.RequestException) as e:
         print(f"Error: {e}")
         return 1
-    
-    
+
 
 # 13.Survival time of domain: The difference between termination time and creation time (Domain_Age)
 def domainAge(domain_name):
@@ -180,6 +186,8 @@ def domainEnd(domain_name):
     return end
 
 # 15. IFrame Redirection (iFrame)
+
+
 def iframe(response):
     if response == "":
         return 1
@@ -240,8 +248,6 @@ def featureExtraction(url):
     features.append(tinyURL(url))
     features.append(prefixSuffix(url))
 
-
-
     dns = 0
     try:
         domain_name = whois.whois(urlparse(url).netloc)
@@ -268,4 +274,5 @@ def featureExtraction(url):
     feature_names = ['Domain', 'Have_IP', 'Have_At', 'URL_Length', 'URL_Depth', 'Redirection',
                      'https_Domain', 'TinyURL', 'Prefix/Suffix', 'DNS_Record', 'Web_Traffic',
                      'Domain_Age', 'Domain_End', 'iFrame', 'Mouse_Over', 'Right_Click', 'Web_Forwards', 'Label']
+    print(features)
     return np.array(features)
